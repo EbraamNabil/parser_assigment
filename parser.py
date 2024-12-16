@@ -1,8 +1,11 @@
+from graphviz import Digraph
+
 class Parser:
     def __init__(self):
         self.rules = {}  # Dictionary to store grammar rules
         self.input_string = []  # Input string to check
         self.success = False  # Parsing success flag
+        self.tree = Digraph(format='png')  # Initialize the Graphviz tree object
 
     def input_grammar(self):
         """Method to input grammar rules dynamically."""
@@ -99,11 +102,21 @@ class Parser:
                 new_stack = stack[:]  # Copy current stack
                 for symbol in reversed(production):  # Push production in reverse
                     new_stack.append(symbol)
+                
+                # Add to tree (draw the node and edges)
+                self.tree.node(str(id(top)), top)
+                self.tree.node(str(id(production)), production)
+                self.tree.edge(str(id(top)), str(id(production)))
+                
                 if self.parse_string(new_stack, index):  # Recursive call
                     return True  # If successful, return True
             return False  # All productions failed
         else:
             return False  # Invalid symbol
+
+    def draw_tree(self):
+        """Render and display the tree."""
+        self.tree.render('parser_tree', view=True)
 
     def run(self):
         """Main loop to run the parser interactively."""
@@ -125,6 +138,7 @@ class Parser:
                 self.success = self.parse_string(['S'], 0)  # Start with 'S' on the stack
                 if self.success:
                     print("Your input String is Accepted.")
+                    self.draw_tree()  # Draw the tree after accepting the string
                 else:
                     print("Your input String is Rejected.")
             elif choice == '3':
